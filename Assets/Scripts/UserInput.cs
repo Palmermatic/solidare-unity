@@ -55,7 +55,7 @@ public class UserInput : MonoBehaviour
 
     void Deck()
     {
-        solitaire.DrawThree();
+        //solitaire.DrawThree();
     }
     void Card(GameObject selected)
     {

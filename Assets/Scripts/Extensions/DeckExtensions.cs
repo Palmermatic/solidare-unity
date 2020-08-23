@@ -27,14 +27,14 @@ namespace Assets.Extensions
         /// <summary>
         /// Unwraps the new deck (adds all 52 cards in order)
         /// </summary>
-        /// <param name="deck"></param>
-        public static void Unwrap(this List<Card> deck)
+        /// <param name="drawPile"></param>
+        public static void Unwrap(this List<Card> drawPile)
         {
             foreach (Suit s in Enum.GetValues(typeof(Suit)))
             {
                 foreach (Face f in Enum.GetValues(typeof(Face)))
                 {
-                    deck.Add(new Card(s, f));
+                    drawPile.Add(new Card(s, f));
                 }
             }
         }

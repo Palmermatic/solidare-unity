@@ -7,9 +7,9 @@ using UnityEngine.UI;
 
 public class UpdateSprite : MonoBehaviour
 {
-    public Sprite cardFace;
-    public Sprite cardBack;
-    private SpriteRenderer spriteRenderer;
+    public Sprite CardFace, CardBack;
+
+    private Image cardImage;
     private Selectable selectable;
     private Solitaire solitaire;
     private UserInput userInput;
@@ -23,23 +23,14 @@ public class UpdateSprite : MonoBehaviour
         //solitaire = FindObjectOfType<Solitaire>();
 
         userInput = FindObjectOfType<UserInput>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        cardImage = GetComponent<Image>();
         selectable = GetComponent<Selectable>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (spriteRenderer != null)
-            spriteRenderer.sprite = selectable.IsFaceUp ? cardFace : cardBack;
 
-        if (name == userInput.slot1.name)
-        {
-            spriteRenderer.color = Color.yellow;
-        }
-        else
-        {
-            spriteRenderer.color = Color.white;
-        }
+        cardImage.sprite = selectable.IsFaceUp ? CardFace : CardBack;
     }
 }
