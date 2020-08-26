@@ -1,34 +1,40 @@
-﻿using System;
+﻿using Assets.Scripts.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.Extensions
+namespace Assets.Scripts.Extensions
 {
     public static class DeckExtensions
     {
         private static Random rng = new Random();
 
-        public static void Shuffle<T>(this IList<T> list)
+        /// <summary>
+        /// Randomizes the order of cards in the deck.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="deck"></param>
+        public static void Shuffle(this Deck deck)
         {
-            int n = list.Count;
+            int n = deck.Cards.Count;
             while (n > 1)
             {
                 n--;
                 int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
+                Card value = deck.Cards[k];
+                deck.Cards[k] = deck.Cards[n];
+                deck.Cards[n] = value;
             }
         }
 
         /// <summary>
-        /// Unwraps the new deck (adds all 52 cards in order)
+        /// Unwraps a new deck (adds all cards in order)
         /// </summary>
         /// <param name="drawPile"></param>
-        public static void Unwrap(this List<Card> drawPile)
+        public static void Unwrap(this Deck drawPile)
         {
             foreach (Suit s in Enum.GetValues(typeof(Suit)))
             {
@@ -37,21 +43,6 @@ namespace Assets.Extensions
                     drawPile.Add(new Card(s, f));
                 }
             }
-        }
-
-        /// <summary>
-        /// Parses a string like "Ace of spades" into a <see cref="Card"/>
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static Card ToCard(this string name)
-        {
-            var names = name.Split(' ');
-            var face = names[0];
-            var suit = names[2];
-            Suit s = (Suit)Enum.Parse(typeof(Suit), suit);
-            Face f = (Face)Enum.Parse(typeof(Face), face);
-            return new Card(s, f);
         }
     }
 }
