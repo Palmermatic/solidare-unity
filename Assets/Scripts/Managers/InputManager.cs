@@ -23,12 +23,24 @@ namespace Assets.Scripts.Managers
 
         void DoubleClickCard(Card card)
         {
-            var suit = card.Suit;
-            var column = GameManager.Instance.Bureau.Where(deck => deck.Cards.All(cards => cards.Suit == suit));
-            if (GameManager.Instance.Bureau.Any(deck => deck.Cards.Any(c => c.Suit == suit)))
+            if (card.Face == Face.Ace)
             {
-                card.PickUp();
+                // ace goes to the first empty Bureau
 
+                card.PickUp();
+                GameManager.Instance.Bureau.First(b => b.Cards.Count == 0).Cards.Add(card);
+            }
+            else
+            {
+                // card can go up if suit matches and previous face value is on top
+                var column = GameManager.Instance.Bureau.Where(deck =>
+                    deck.Cards.Last().Suit == card.Suit && deck.Cards.Last().Face == (card.Face - 1)).ToList();
+
+                if (column.Count == 1)
+                {
+                    card.PickUp();
+                    column.Single().Cards.Add(card);
+                }
             }
         }
     }
