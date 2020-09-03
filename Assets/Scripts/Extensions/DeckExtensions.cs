@@ -1,48 +1,82 @@
-﻿using Assets.Scripts.Models;
+﻿using Assets.Scripts.Managers;
+using Assets.Scripts.Models;
+using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Assets.Scripts.Extensions
 {
     public static class DeckExtensions
     {
-        private static Random rng = new Random();
+        private static readonly System.Random rng = new System.Random();
 
         /// <summary>
         /// Randomizes the order of cards in the deck.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="deck"></param>
-        public static void Shuffle(this Deck deck)
+        public static IEnumerator Shuffle(this Deck deck)
         {
             int n = deck.Cards.Count;
             while (n > 1)
             {
                 n--;
                 int k = rng.Next(n + 1);
-                Card value = deck.Cards[k];
-                deck.Cards[k] = deck.Cards[n];
-                deck.Cards[n] = value;
+                deck.Cards.SwapCards(k, n);
+                yield return new WaitForSeconds(0.05f);
             }
+
+            deck.Cards = deck.Cards.OrderBy(c => c.transform.position.z).ToList();
+            foreach (var card in deck.Cards)
+            {
+                card.gameObject.transform.SetAsLastSibling();
+            }
+            //GameManager.Instance.Deal();
         }
 
         /// <summary>
-        /// Unwraps a new deck (adds all cards in order)
+        /// Swaps the list position and transform positions of two cards.
         /// </summary>
-        /// <param name="drawPile"></param>
-        public static void Unwrap(this Deck drawPile)
+        /// <param name="deck"></param>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        private static void SwapCards(this IList<Card> deck, int c1, int c2)
         {
-            foreach (Suit s in Enum.GetValues(typeof(Suit)))
+            var temp = deck[c1];
+            deck[c1] = deck[c2];
+            deck[c2] = temp;
+
+            var p1 = deck[c1].transform.position;
+            var p2 = deck[c2].transform.position;
+
+            //deck[c1].transform.DOJump(new Vector3(p1.x, p1.y, p2.z), 10f, 1, 0.2f);
+            //deck[c2].transform.DOJump(new Vector3(p2.x, p2.y, p1.z), -10f, 1, 0.2f);
+            ShuffleAnimate(deck[c1].transform, p2.z);
+            ShuffleAnimate(deck[c2].transform, p1.z);
+        }
+
+        private static void ShuffleAnimate(Transform xform, float z)
+        {
+            xform.DOLocalMoveY(30, 1f).OnComplete(() =>
             {
-                foreach (Face f in Enum.GetValues(typeof(Face)))
+                xform.DOLocalMoveX(100, 1f).OnComplete(() =>
                 {
-                    drawPile.Add(new Card(s, f));
-                }
-            }
+                    xform.DOLocalMoveZ(z, 0).OnComplete(() =>
+                    {
+                        xform.DOLocalMoveY(0, 1f).OnComplete(() =>
+                        {
+                            xform.DOLocalMoveX(0, 1f);
+                        });
+                    });
+                });
+            });
         }
     }
 }

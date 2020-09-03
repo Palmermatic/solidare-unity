@@ -1,39 +1,51 @@
-﻿using System;
+﻿using Assets.Scripts.Extensions;
+using Assets.Scripts.Managers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Models
 {
-    public class Deck
+    public enum CardStackDirection { None, Horizontal, Vertical }
+
+    public class Deck : MonoBehaviour
     {
-        public List<Card> Cards { get; set; } = new List<Card>();
+        public List<Card> Cards = new List<Card>();
 
-        public Deck(IList<Card> cards)
+        public void NewDeck(IList<Card> cards = null)
         {
-            Cards = cards.ToList();
+            if (cards != null)
+            {
+                Cards = cards.ToList();
+            }
         }
 
-        public Deck() { }
-
         /// <summary>
-        /// It's an empty deck.
+        /// Initializes a new <see cref="Deck"/> slot
         /// </summary>
-        public static Deck Empty = new Deck();
-
-        /// <summary>
-        /// Returns the given card and all cards on top of it.
-        /// </summary>
-        /// <param name="anchor"></param>
-        /// <returns></returns>
-        public Deck PickUpFrom(Card anchor)
+        public void NewSlot(string name, string tag, CardStackDirection direction, int spacing = 0)
         {
-            var index = Cards.FindIndex(card => card.Equals(anchor));
-            var cards = Cards.GetRange(0, index);
-            Cards.RemoveRange(0, index);
-            return new Deck(cards);
+            gameObject.name = name;
+            gameObject.tag = tag;
+            if (direction == CardStackDirection.Horizontal)
+            {
+                var hlg = gameObject.AddComponent<HorizontalLayoutGroup>();
+                hlg.spacing = spacing;
+                hlg.childControlWidth = false;
+            }
+            if (direction == CardStackDirection.Vertical)
+            {
+                var vlg = gameObject.AddComponent<VerticalLayoutGroup>();
+                vlg.spacing = spacing;
+                vlg.childControlHeight = false;
+            }
+            NewDeck();
         }
+
 
         /// <summary>
         /// Draws a card from the top of the deck.
@@ -41,8 +53,8 @@ namespace Assets.Scripts.Models
         /// <returns></returns>
         public Card Draw()
         {
-            var card = Cards.First();
-            Cards.RemoveAt(0);
+            var card = Cards.Last();
+            Cards.Remove(card);
             return card;
         }
 

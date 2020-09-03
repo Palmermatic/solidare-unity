@@ -11,101 +11,109 @@ namespace Assets.Scripts.Managers
 {
     public class GameManager : Singleton<GameManager>
     {
-        public GameObject CardPrefab;
-        public Button DrawCardButton;
-        public GameObject[] BottomPos, TopPos;
+        public GameObject CardPrefab, EmptySlotPrefab, DrawSlotPrefab;
+        public GameObject DrawContainer, DiscardContainer, FlopContainer, BureauContainer, TableauContainer;
 
-        public Deck DrawPile, DiscardPile;
-        public List<Deck> Tableau, Bureau;
-        public GameOptions options;
+        public Deck DrawPile;
+        public Deck DiscardPile;
+        public Deck FlopPile;
+        public List<Deck> Tableau = new List<Deck>();
+        public List<Deck> Bureau = new List<Deck>();
+        public GameOptions options = new GameOptions();
 
-        void Start()
+        public bool HasBeenDealt = false;
+        public int NumberOfRedrawsLeft = 3;
+
+        void Awake()
         {
-            AssignBoardPresets();
-            DealCards();
+            SetupGameBoard(options);
+            UnwrapDeck();
+            StartCoroutine(DrawPile.Shuffle());
         }
 
-        void Update()
+        public void Deal()
         {
-
+            StartCoroutine(SolitaireDeal());
+            HasBeenDealt = true;
         }
 
-        public void DealCards()
+        /// <summary>
+        /// Sets up all the empty slots according to game options.
+        /// </summary>
+        /// <param name="options"></param>
+        public void SetupGameBoard(GameOptions options)
         {
+            DrawPile = Instantiate(DrawSlotPrefab, DrawContainer.transform).GetComponent<Deck>();
+            DrawPile.NewSlot("DrawPile", "Draw", CardStackDirection.None);
+            DrawPile.gameObject.GetComponent<SlotClick>().enabled = false;
 
-            DrawPile.Unwrap();
+            DiscardPile = Instantiate(EmptySlotPrefab, DiscardContainer.transform).GetComponent<Deck>();
+            DiscardPile.NewSlot("DiscardPile", "Discard", CardStackDirection.None, 0);
 
-            DrawPile.Shuffle();
+            FlopPile = Instantiate(EmptySlotPrefab, FlopContainer.transform).GetComponent<Deck>();
+            FlopPile.NewSlot("FlopPile", "Discard", CardStackDirection.Horizontal, -140);
 
-            SolitaireDeal();
-
-            StartCoroutine(Deal());
-        }
-
-        public void AssignBoardPresets()
-        {
-            Bureau = new List<Deck>();
-            Tableau = new List<Deck>();
-
-            DrawPile = Deck.Empty;
-            DiscardPile = Deck.Empty;
-
-        }
-
-        IEnumerator Deal()
-        {
             for (int i = 0; i < options.NumberOfColumns; i++)
             {
-                float yOffset = 0;
-                float zOffset = 0.03f;
-
-                foreach (var card in Tableau[i].Cards)
-                {
-                    yield return new WaitForSeconds(0.13f);
-
-                    GameObject newCard = Instantiate(
-                        CardPrefab,
-                        new Vector3(
-                            BottomPos[i].transform.position.x,
-                            BottomPos[i].transform.position.y - yOffset,
-                            BottomPos[i].transform.position.z - zOffset
-                        ),
-                        Quaternion.identity,
-                        BottomPos[0].transform
-
-                    );
-                    newCard.name = card.ToString();
-                    newCard.tag = "Card";
-
-
-                    newCard.GetComponent<Card>().IsFaceUp = card == Tableau[i].Cards.Last();
-
-                    yOffset += 0.3f;
-                    zOffset += 0.03f;
-                    DiscardPile.Add(card);
-                }
+                var d = Instantiate(EmptySlotPrefab, TableauContainer.transform).GetComponent<Deck>();
+                d.NewSlot("Tableau" + i, "Tableau", CardStackDirection.Vertical, -230);
+                Tableau.Add(d);
             }
 
-            foreach (var card in DiscardPile.Cards)
+            for (int i = 0; i < options.NumberOfSuits; i++)
             {
-                if (DrawPile.Cards.Any(unDrawn => unDrawn.Suit == card.Suit && unDrawn.Face == card.Face))
+                var d = Instantiate(EmptySlotPrefab, BureauContainer.transform).GetComponent<Deck>();
+                d.NewSlot("Bureau" + i, "Bureau", CardStackDirection.Vertical, -290);
+                Bureau.Add(d);
+            }
+        }
+
+        /// <summary>
+        /// Generates all possible cards, face-down and shuffled, in the draw pile with tag 'Draw'
+        /// </summary>
+        public void UnwrapDeck()
+        {
+            var p = DrawPile.transform.position;
+            float z = 0f;
+            foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+            {
+                foreach (Face face in Enum.GetValues(typeof(Face)))
                 {
-                    DrawPile.Cards.Remove(card);
+                    Card card = Instantiate(
+                        CardPrefab,
+                        new Vector3(p.x, p.y, p.z - z++),
+                        Quaternion.identity,
+                        DrawPile.transform
+                    ).GetComponent<Card>();
+
+                    card.NewCard(suit, face);
+                    card.name = card.ToString();
+                    card.tag = "Draw";
+
+                    DrawPile.Add(card);
                 }
             }
-            DiscardPile.Cards.Clear();
         }
 
         /// <summary>
         /// Deals out the Klondike Solitaire columns.
         /// </summary>
-        void SolitaireDeal()
+        public IEnumerator SolitaireDeal()
         {
             for (int i = 0; i < options.NumberOfColumns; i++)
             {
                 for (int j = i; j < options.NumberOfColumns; j++)
                 {
-                    Tableau[j].Add(DrawPile.Draw());
+                    var card = DrawPile.Draw();
+                    card.MoveCardToDeck(Tableau[j]);
+                    card.tag = "Tableau";
+
+                    if (j == i)
+                    {
+                        card.Flip();
+                    }
+
+                    yield return new WaitForSeconds(options.DealSpeed);
                 }
             }
         }

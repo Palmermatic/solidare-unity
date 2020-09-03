@@ -4,10 +4,12 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Bottom
-  - Top
-  - Deck
   - Card
+  - Tableau
+  - Bureau
+  - Discard
+  - Draw
+  - Deck
   layers:
   - Default
   - TransparentFX
@@ -17,8 +19,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Cards
+  - Zoom
   - 
   - 
   - 
