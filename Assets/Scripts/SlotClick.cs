@@ -14,8 +14,6 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
 
     void Awake()
     {
-        MoreDeals = Resources.Load<Sprite>("black-joker");
-        NoMoreDeals = Resources.Load<Sprite>("red-joker");
         NumberOfRedrawsLeft = GameManager.Instance.options.NumberOfRedraws;
     }
 
@@ -23,23 +21,20 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
     {
         if (CompareTag("Draw"))
         {
-            if (GameManager.Instance.NumberOfRedrawsLeft-- > 0)
+            if (NumberOfRedrawsLeft > 0)
             {
-                foreach (var card in GameManager.Instance.FlopPile.Cards)
+                foreach (var card in GameManager.Instance.FlopPile.Cards.ToList())
                 {
-                    card.PickUp();
                     card.MoveCardToDeck(GameManager.Instance.DrawPile);
                     card.Flip(false);
                     card.tag = "Draw";
                 }
-                foreach (var card in GameManager.Instance.DiscardPile.Cards)
+                foreach (var card in GameManager.Instance.DiscardPile.Cards.ToList())
                 {
-                    card.PickUp();
                     card.MoveCardToDeck(GameManager.Instance.DrawPile);
                     card.Flip(false);
                     card.tag = "Draw";
                 }
-
             }
         }
     }
@@ -61,7 +56,7 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
         var num = GameManager.Instance.options.NumberToDraw;
         for (int i = 0; i < num; i++)
         {
-            var card = draw.Draw();
+            var card = draw.Cards.Last();
             card.Flip();
             card.MoveCardToDeck(flop);
             card.tag = "Discard";
@@ -76,7 +71,6 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
             else
             {
                 draw.GetComponent<Image>().sprite = NoMoreDeals;
-                draw.GetComponent<Card>().enabled = false;
             }
         }
     }

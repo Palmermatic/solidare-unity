@@ -14,6 +14,7 @@ namespace Assets.Scripts.Managers
         public GameObject CardPrefab, EmptySlotPrefab, DrawSlotPrefab;
         public GameObject DrawContainer, DiscardContainer, FlopContainer, BureauContainer, TableauContainer;
 
+        public Deck CardsInHand;
         public Deck DrawPile;
         public Deck DiscardPile;
         public Deck FlopPile;
@@ -43,12 +44,17 @@ namespace Assets.Scripts.Managers
         /// <param name="options"></param>
         public void SetupGameBoard(GameOptions options)
         {
+            CardsInHand = Instantiate(EmptySlotPrefab, FindObjectOfType<Canvas>().transform).GetComponent<Deck>();
+            CardsInHand.NewSlot("Cards in hand", "Hand", CardStackDirection.Vertical, -230);
+            CardsInHand.GetComponent<Image>().enabled = false;
+            CardsInHand.GetComponent<BoxCollider2D>().enabled = false;
+
             DrawPile = Instantiate(DrawSlotPrefab, DrawContainer.transform).GetComponent<Deck>();
             DrawPile.NewSlot("DrawPile", "Draw", CardStackDirection.None);
-            DrawPile.gameObject.GetComponent<SlotClick>().enabled = false;
 
             DiscardPile = Instantiate(EmptySlotPrefab, DiscardContainer.transform).GetComponent<Deck>();
             DiscardPile.NewSlot("DiscardPile", "Discard", CardStackDirection.None, 0);
+
 
             FlopPile = Instantiate(EmptySlotPrefab, FlopContainer.transform).GetComponent<Deck>();
             FlopPile.NewSlot("FlopPile", "Discard", CardStackDirection.Horizontal, -140);
@@ -90,7 +96,7 @@ namespace Assets.Scripts.Managers
                     card.name = card.ToString();
                     card.tag = "Draw";
 
-                    DrawPile.Add(card);
+                    DrawPile.Cards.Add(card);
                 }
             }
         }
@@ -104,7 +110,7 @@ namespace Assets.Scripts.Managers
             {
                 for (int j = i; j < options.NumberOfColumns; j++)
                 {
-                    var card = DrawPile.Draw();
+                    var card = DrawPile.Cards.Last();
                     card.MoveCardToDeck(Tableau[j]);
                     card.tag = "Tableau";
 

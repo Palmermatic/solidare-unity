@@ -32,9 +32,13 @@ namespace Assets.Scripts.Extensions
         {
             if (source == null)
             {
-                source = card.gameObject.GetComponentInParent<Deck>();
+                source = card.GetComponentInParent<Deck>();
             }
-            source.Cards.Remove(card);
+            if (!source.Cards.Remove(card))
+            {
+                Debug.Log("Failed to pick up " + card);
+            }
+
         }
 
         public static void Flip(this Card card, bool faceUp = true)
@@ -43,28 +47,27 @@ namespace Assets.Scripts.Extensions
             card.GetComponent<Image>().sprite = faceUp ? card.CardFace : card.CardBack;
         }
 
-        public static void MoveCardToDeck(this Card card, Deck deck, int spacing = 0, Deck source = null)
+        public static void MoveCardToDeck(this Card card, Deck deck, int spacing = 0)
         {
+            var source = card.GetComponentInParent<Deck>();
             card.PickUp(source);
             var verticalSpace = deck.CompareTag("Tableau") ? 16 * deck.Cards.Count : spacing;
+
             var dest = new Vector3(
                 deck.transform.position.x,
                 deck.transform.position.y - verticalSpace,
                 deck.transform.position.z - deck.Cards.Count);
 
-            deck.Add(card);
-            deck.GetComponent<BoxCollider2D>().size = new Vector2(200, 290 + verticalSpace);
-            if (source != null)
-            {
-                source.GetComponent<BoxCollider2D>().size = new Vector2(200, 290);
-            }
+            deck.Cards.Add(card);
+            deck.GetComponent<BoxCollider2D>().size = new Vector2(200, 290 + verticalSpace * deck.Cards.Count);
+            source.GetComponent<BoxCollider2D>().size = new Vector2(200, 290 + verticalSpace * source.Cards.Count);
 
             card.transform
                 .DOMove(dest, GameManager.Instance.options.DealSpeed)
                 .SetEase(Ease.OutQuart)
                 .OnComplete(() =>
                 {
-                    card.transform.SetParent(deck.transform, false);
+                    card.transform.SetParent(deck.transform);
                 });
         }
     }

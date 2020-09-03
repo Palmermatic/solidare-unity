@@ -1,9 +1,12 @@
 ﻿using Assets.Scripts.Extensions;
+using Assets.Scripts.Managers;
 using Assets.Scripts.Models;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class DragDrop : MonoBehaviour
 {
@@ -11,8 +14,8 @@ public class DragDrop : MonoBehaviour
 
     private bool isDragging = false;
     private bool isOverDropzone = false;
+
     private GameObject dropZone;
-    private Vector2 startPosition;
     private GameObject startParent;
 
     void Awake()
@@ -24,7 +27,7 @@ public class DragDrop : MonoBehaviour
     {
         if (isDragging)
         {
-            transform.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            GameManager.Instance.CardsInHand.transform.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         }
     }
 
@@ -45,12 +48,22 @@ public class DragDrop : MonoBehaviour
     public void StartDrag()
     {
         var card = gameObject.GetComponent<Card>();
-        if (card.IsFaceUp && gameObject.GetComponentInParent<Deck>().Cards.Last() == card)
+        var deck = gameObject.GetComponentInParent<Deck>();
+
+        if (!card.IsFaceUp) { return; }
+
+        isDragging = true;
+        startParent = transform.parent.gameObject;
+        var deckInHand = GameManager.Instance.CardsInHand;
+
+        var i = deck.Cards.IndexOf(card);
+        var cardStack = deck.Cards.GetRange(i, deck.Cards.Count() - i);
+        card.PickUp();
+        foreach (var c in cardStack)
         {
-            startParent = transform.parent.gameObject;
-            startPosition = transform.position;
-            isDragging = true;
-            transform.SetParent(Canvas.transform, true);
+            c.PickUp();
+            deckInHand.Cards.Add(c);
+            c.transform.SetParent(deckInHand.transform, false);
         }
     }
 
@@ -62,21 +75,33 @@ public class DragDrop : MonoBehaviour
 
         if (!isOverDropzone)
         {
-            transform.position = startPosition;
-            transform.SetParent(startParent.transform, false);
+            SnapBack();
             return;
         }
 
-        var cardInHand = gameObject.GetComponent<Card>();
+        var cardInHand = GetComponent<Card>();
+        var cardsInHand = GetComponentInParent<Deck>();
         var dropCard = dropZone.GetComponentsInChildren<Card>().LastOrDefault();
 
+        // dropped onto empty slot
         if (dropCard == null)
         {
-            // dropped onto empty slot
-            if ((dropZone.CompareTag("Bureau") && cardInHand.Face == Face.Ace)
-                || (dropZone.CompareTag("Tableau") && cardInHand.Face == Face.King))
+            if (dropZone.CompareTag("Bureau") && cardInHand.Face == Face.Ace)
             {
-                cardInHand.MoveCardToDeck(dropZone.GetComponent<Deck>(), 0, startParent.GetComponent<Deck>());
+                cardInHand.MoveCardToDeck(dropZone.GetComponent<Deck>());
+            }
+
+            if (dropZone.CompareTag("Tableau") && cardInHand.Face == Face.King)
+            {
+                if (cardsInHand != null)
+                {
+                    foreach (var card in cardsInHand.Cards.ToList())
+                    {
+                        card.MoveCardToDeck(dropZone.GetComponent<Deck>());
+                    }
+                    return;
+                }
+                cardInHand.MoveCardToDeck(dropZone.GetComponent<Deck>());
             }
             else
             {
@@ -84,21 +109,23 @@ public class DragDrop : MonoBehaviour
             }
             return;
         }
-        else
+
+        // dropped onto another card
+        if    ((dropCard.CompareTag("Bureau")
+                && cardInHand.Suit == dropCard.Suit
+                && cardInHand.Face == dropCard.Face + 1)
+            || (dropCard.CompareTag("Tableau")
+                && cardInHand.Color != dropCard.Color
+                && cardInHand.Face == dropCard.Face - 1)
+            || (dropCard.CompareTag("Discard")))
         {
-            // dropped onto another card
-            if    ((dropCard.CompareTag("Bureau")
-                    && cardInHand.Suit == dropCard.Suit
-                    && cardInHand.Face == dropCard.Face + 1)
-                || (dropCard.CompareTag("Tableau")
-                    && cardInHand.Color != dropCard.Color
-                    && cardInHand.Face == dropCard.Face - 1)
-                || (dropCard.CompareTag("Discard")))
+            foreach (var card in cardsInHand.Cards.ToList())
             {
-                cardInHand.MoveCardToDeck(dropZone.GetComponent<Deck>(), 0, startParent.GetComponent<Deck>());
-                return;
+                card.MoveCardToDeck(dropZone.GetComponent<Deck>());
             }
+            return;
         }
+
 
         // dropped elsewhere
         SnapBack();
@@ -106,8 +133,11 @@ public class DragDrop : MonoBehaviour
 
     void SnapBack()
     {
-        transform.position = startPosition;
-        transform.SetParent(startParent.transform, false);
+        foreach (var card in GameManager.Instance.CardsInHand.Cards.ToList())
+        {
+            card.MoveCardToDeck(startParent.GetComponent<Deck>());
+        }
+
         isOverDropzone = false;
         dropZone = null;
         startParent = null;

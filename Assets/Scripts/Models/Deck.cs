@@ -20,14 +20,14 @@ namespace Assets.Scripts.Models
         {
             if (cards != null)
             {
-                Cards = cards.ToList();
+                Cards.AddRange(cards.ToList());
             }
         }
 
         /// <summary>
         /// Initializes a new <see cref="Deck"/> slot
         /// </summary>
-        public void NewSlot(string name, string tag, CardStackDirection direction, int spacing = 0)
+        public void NewSlot(string name, string tag, CardStackDirection direction, int spacing = 0, IList<Card> cards = null)
         {
             gameObject.name = name;
             gameObject.tag = tag;
@@ -43,28 +43,7 @@ namespace Assets.Scripts.Models
                 vlg.spacing = spacing;
                 vlg.childControlHeight = false;
             }
-            NewDeck();
-        }
-
-
-        /// <summary>
-        /// Draws a card from the top of the deck.
-        /// </summary>
-        /// <returns></returns>
-        public Card Draw()
-        {
-            var card = Cards.Last();
-            Cards.Remove(card);
-            return card;
-        }
-
-        /// <summary>
-        /// Adds a card to the top of the deck.
-        /// </summary>
-        /// <param name="card"></param>
-        public void Add(Card card)
-        {
-            Cards.Add(card);
+            NewDeck(cards);
         }
     }
 }

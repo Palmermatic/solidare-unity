@@ -64,15 +64,15 @@ namespace Assets.Scripts.Extensions
 
         private static void ShuffleAnimate(Transform xform, float z)
         {
-            xform.DOLocalMoveY(30, 1f).OnComplete(() =>
+            xform.DOLocalMoveY(30, 0.2f).OnComplete(() =>
             {
-                xform.DOLocalMoveX(100, 1f).OnComplete(() =>
+                xform.DOLocalMoveX(100, 0.2f).OnComplete(() =>
                 {
                     xform.DOLocalMoveZ(z, 0).OnComplete(() =>
                     {
-                        xform.DOLocalMoveY(0, 1f).OnComplete(() =>
+                        xform.DOLocalMoveY(0, 0.2f).OnComplete(() =>
                         {
-                            xform.DOLocalMoveX(0, 1f);
+                            xform.DOLocalMoveX(0, 0.2f);
                         });
                     });
                 });
