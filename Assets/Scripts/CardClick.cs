@@ -80,6 +80,11 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
                 {
                     card.MoveCardToDeck(col);
                     card.tag = "Bureau";
+
+                    if (card.Face == Face.King)
+                    {
+                        GameManager.Instance.CheckForWin();
+                    }
                     return;
                 }
             }

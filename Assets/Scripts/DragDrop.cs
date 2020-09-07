@@ -1,12 +1,8 @@
 ﻿using Assets.Scripts.Extensions;
 using Assets.Scripts.Managers;
 using Assets.Scripts.Models;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Video;
 
 public class DragDrop : MonoBehaviour
 {
@@ -35,13 +31,11 @@ public class DragDrop : MonoBehaviour
     {
         isOverDropzone = true;
         dropZone = collision.gameObject;
-        //Debug.Log(gameObject.name + " is hovering over " + dropZone.name);
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         isOverDropzone = false;
-        //Debug.Log("End hover");
         dropZone = null;
     }
 
@@ -50,6 +44,7 @@ public class DragDrop : MonoBehaviour
         var card = gameObject.GetComponent<Card>();
         var deck = gameObject.GetComponentInParent<Deck>();
 
+        if (deck == null) { return; }
         if (!card.IsFaceUp) { return; }
 
         isDragging = true;
@@ -58,7 +53,6 @@ public class DragDrop : MonoBehaviour
 
         var i = deck.Cards.IndexOf(card);
         var cardStack = deck.Cards.GetRange(i, deck.Cards.Count() - i);
-        card.PickUp();
         foreach (var c in cardStack)
         {
             c.PickUp();
@@ -122,6 +116,10 @@ public class DragDrop : MonoBehaviour
             foreach (var card in cardsInHand.Cards.ToList())
             {
                 card.MoveCardToDeck(dropZone.GetComponent<Deck>());
+                if (card.Face == Face.King && dropCard.CompareTag("Bureau"))
+                {
+                    GameManager.Instance.CheckForWin();
+                }
             }
             return;
         }

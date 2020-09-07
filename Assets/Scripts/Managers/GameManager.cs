@@ -1,18 +1,20 @@
 ﻿using Assets.Scripts.Extensions;
 using Assets.Scripts.Models;
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = System.Random;
 
 namespace Assets.Scripts.Managers
 {
     public class GameManager : Singleton<GameManager>
     {
         public GameObject CardPrefab, EmptySlotPrefab, DrawSlotPrefab;
-        public GameObject DrawContainer, DiscardContainer, FlopContainer, BureauContainer, TableauContainer;
+        public GameObject DrawContainer, DiscardContainer, FlopContainer, BureauContainer, TableauContainer, Floor;
 
         public Deck CardsInHand;
         public Deck DrawPile;
@@ -24,9 +26,14 @@ namespace Assets.Scripts.Managers
 
         public bool HasBeenDealt = false;
         public int NumberOfRedrawsLeft = 3;
+        public Random rng;
+
+        private GameObject Canvas;
 
         void Awake()
         {
+            rng = new Random();
+            Canvas = GameObject.Find("Canvas");
             SetupGameBoard(options);
             UnwrapDeck();
             StartCoroutine(DrawPile.Shuffle());
@@ -110,6 +117,7 @@ namespace Assets.Scripts.Managers
             {
                 for (int j = i; j < options.NumberOfColumns; j++)
                 {
+                    if (!DrawPile.Cards.Any()) { yield break; }
                     var card = DrawPile.Cards.Last();
                     card.MoveCardToDeck(Tableau[j]);
                     card.tag = "Tableau";
@@ -122,6 +130,82 @@ namespace Assets.Scripts.Managers
                     yield return new WaitForSeconds(options.DealSpeed);
                 }
             }
+        }
+
+        public void Cheat()
+        {
+            var cards = Canvas.GetComponentsInChildren<Card>();
+
+            foreach (var card in cards.OrderBy(c => c.Face).Take(51))
+            {
+                card.Flip();
+                if (Bureau.Any(b => b.Cards.Any(c => c.Suit == card.Suit)))
+                {
+                    card.MoveCardToDeck(Bureau.First(b => b.Cards.Any(c => c.Suit == card.Suit)));
+                }
+                else
+                {
+                    card.MoveCardToDeck(Bureau.First(b => !b.Cards.Any()));
+                }
+            }
+        }
+
+        public void CheckForWin()
+        {
+            if (Tableau.All(t => t.Cards.Count == 0))
+            {
+                StartCoroutine(DropCard());
+            }
+        }
+
+        public IEnumerator DropCard()
+        {
+            var cards = Canvas.GetComponentsInChildren<Card>().OrderByDescending(c => c.Face).ThenBy(c => c.Suit);
+            foreach (var card in cards)
+            {
+                card.GetComponent<DragDrop>().enabled = false;
+
+                var rb = card.gameObject.GetComponent<Rigidbody2D>();
+                rb.constraints = RigidbodyConstraints2D.None;
+                rb.velocity = GetRandomVelocity();
+
+                card.gameObject.layer = LayerMask.NameToLayer("WinningCards");
+
+                card.PickUp();
+                card.transform.SetParent(Canvas.transform, true);
+
+                yield return new WaitWhile(() => IsInsideCanvas(card));
+                Destroy(card.gameObject);
+            }
+        }
+
+        private bool IsInsideCanvas(Card card)
+        {
+            var canvasRect = Canvas.GetComponent<RectTransform>().rect;
+            return canvasRect.Contains(card.gameObject.transform.position);
+        }
+
+        private Vector2 GetRandomVelocity()
+        {
+            var x = rng.Next(15, 50);
+            var y = rng.Next(-30, 30);
+
+            var randomSign = rng.Next(0, 2);
+            if (randomSign == 1) { x *= -1; }
+
+            return new Vector2(x, y);
+        }
+
+        public void SpawnJoker()
+        {
+            var joker = Instantiate(CardPrefab, new Vector3(rng.Next(0,100), rng.Next(0,100), 0), Quaternion.identity, Canvas.transform);
+            joker.GetComponent<Image>().sprite = Resources.Load<Sprite>("black_joker");
+            joker.layer = LayerMask.NameToLayer("Bouncy");
+            joker.name = "JOKER";
+            var rb = joker.GetComponent<Rigidbody2D>();
+            rb.constraints = RigidbodyConstraints2D.None;
+            rb.velocity = GetRandomVelocity();
+            rb.gravityScale = 0;
         }
     }
 

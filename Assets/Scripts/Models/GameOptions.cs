@@ -11,7 +11,7 @@ namespace Assets.Scripts.Models
         public int NumberOfSuits = 4;
         public int NumberOfColumns = 7;
         public int NumberToDraw = 3;
-        public float DealSpeed = 0.1f;
+        public float DealSpeed = 0.03f;
         public int NumberOfRedraws = 3;
     }
 }

@@ -21,7 +21,7 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
     {
         if (CompareTag("Draw"))
         {
-            if (NumberOfRedrawsLeft > 0)
+            if (NumberOfRedrawsLeft-- > 0)
             {
                 foreach (var card in GameManager.Instance.FlopPile.Cards.ToList())
                 {
@@ -56,6 +56,8 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
         var num = GameManager.Instance.options.NumberToDraw;
         for (int i = 0; i < num; i++)
         {
+            if (!draw.Cards.Any()) { continue; }
+
             var card = draw.Cards.Last();
             card.Flip();
             card.MoveCardToDeck(flop);
@@ -64,7 +66,7 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
 
         if (!draw.Cards.Any())
         {
-            if (NumberOfRedrawsLeft-- > 0)
+            if (NumberOfRedrawsLeft > 0)
             {
                 draw.GetComponent<Image>().sprite = MoreDeals;
             }
