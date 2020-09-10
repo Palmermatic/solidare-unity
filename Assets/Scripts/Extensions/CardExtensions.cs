@@ -70,5 +70,14 @@ namespace Assets.Scripts.Extensions
                     card.transform.SetParent(deck.transform);
                 });
         }
+
+        /// <summary>
+        /// Returns true if card is inside the given object's RectTransform.
+        /// </summary>
+        public static bool IsInside(this Card card, GameObject obj)
+        {
+            var canvasRect = obj.GetComponent<RectTransform>().rect;
+            return canvasRect.Contains(card.gameObject.transform.position);
+        }
     }
 }

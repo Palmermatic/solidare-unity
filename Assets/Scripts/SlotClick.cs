@@ -23,6 +23,7 @@ public class SlotClick : MonoBehaviour, IPointerClickHandler
         {
             if (NumberOfRedrawsLeft-- > 0)
             {
+                ResourceManager.Instance.Cash -= 10;
                 foreach (var card in GameManager.Instance.FlopPile.Cards.ToList())
                 {
                     card.MoveCardToDeck(GameManager.Instance.DrawPile);

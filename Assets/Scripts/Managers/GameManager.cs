@@ -174,16 +174,12 @@ namespace Assets.Scripts.Managers
                 card.PickUp();
                 card.transform.SetParent(Canvas.transform, true);
 
-                yield return new WaitWhile(() => IsInsideCanvas(card));
+                yield return new WaitWhile(() => card.IsInside(Canvas));
                 Destroy(card.gameObject);
             }
         }
 
-        private bool IsInsideCanvas(Card card)
-        {
-            var canvasRect = Canvas.GetComponent<RectTransform>().rect;
-            return canvasRect.Contains(card.gameObject.transform.position);
-        }
+
 
         private Vector2 GetRandomVelocity()
         {
