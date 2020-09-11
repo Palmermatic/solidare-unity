@@ -6,7 +6,8 @@ using UnityEngine;
 
 public class DragDrop : MonoBehaviour
 {
-    public GameObject Canvas;
+    private GameObject Canvas;
+    public Camera Camera;
 
     private bool isDragging = false;
     private bool isOverDropzone = false;
@@ -17,13 +18,14 @@ public class DragDrop : MonoBehaviour
     void Awake()
     {
         Canvas = GameObject.Find("Canvas");
+        Camera = GameObject.Find("MainCamera").GetComponent<Camera>();
     }
 
     void Update()
     {
         if (isDragging)
         {
-            GameManager.Instance.CardsInHand.transform.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            GameManager.Instance.CardsInHand.transform.position = Camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
         }
     }
 
@@ -31,12 +33,15 @@ public class DragDrop : MonoBehaviour
     {
         isOverDropzone = true;
         dropZone = collision.gameObject;
+        Debug.Log(collision?.collider?.GetComponent<Card>() + " collided.");
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         isOverDropzone = false;
         dropZone = null;
+        Debug.Log(collision?.collider?.GetComponent<Card>() + " stopped colliding.");
+
     }
 
     public void StartDrag()

@@ -13,7 +13,7 @@ namespace Assets.Scripts.Managers
 {
     public class GameManager : Singleton<GameManager>
     {
-        public GameObject CardPrefab, EmptySlotPrefab, DrawSlotPrefab;
+        public GameObject CardPrefab, EmptySlotPrefab, DrawSlotPrefab, CardsInHandPrefab;
         public GameObject DrawContainer, DiscardContainer, FlopContainer, BureauContainer, TableauContainer, Floor;
 
         public Deck CardsInHand;
@@ -51,10 +51,8 @@ namespace Assets.Scripts.Managers
         /// <param name="options"></param>
         public void SetupGameBoard(GameOptions options)
         {
-            CardsInHand = Instantiate(EmptySlotPrefab, FindObjectOfType<Canvas>().transform).GetComponent<Deck>();
+            CardsInHand = Instantiate(CardsInHandPrefab, FindObjectOfType<Canvas>().transform).GetComponent<Deck>();
             CardsInHand.NewSlot("Cards in hand", "Hand", CardStackDirection.Vertical, -230);
-            CardsInHand.GetComponent<Image>().enabled = false;
-            CardsInHand.GetComponent<BoxCollider2D>().enabled = false;
 
             DrawPile = Instantiate(DrawSlotPrefab, DrawContainer.transform).GetComponent<Deck>();
             DrawPile.NewSlot("DrawPile", "Draw", CardStackDirection.None);

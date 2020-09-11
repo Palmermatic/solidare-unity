@@ -36,15 +36,6 @@ public class FlyCamera : MonoBehaviour
 
     void Update()
     {
-        //calculate mouse view direction
-        lastMouse = Input.mousePosition - lastMouse;
-        lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-        lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
-        transform.eulerAngles = lastMouse;
-        lastMouse = Input.mousePosition;
-        //Mouse camera angle done.
-
-
         //Keyboard commands
         Vector3 p = GetBaseInput(); //take WASD input from user
 
@@ -89,11 +80,11 @@ public class FlyCamera : MonoBehaviour
         Vector3 p_Velocity = new Vector3();
         if (Input.GetKey(KeyCode.W))
         {
-            p_Velocity += new Vector3(0, 0, 1);
+            p_Velocity += new Vector3(0, 1, 0);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            p_Velocity += new Vector3(0, 0, -1);
+            p_Velocity += new Vector3(0, -1, 0);
         }
         if (Input.GetKey(KeyCode.A))
         {
