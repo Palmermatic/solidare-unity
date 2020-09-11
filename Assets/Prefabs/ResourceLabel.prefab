@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 578316434572544744}
   - component: {fileID: 578316434572544746}
   - component: {fileID: 578316434572544745}
-  - component: {fileID: 578316434572544747}
+  - component: {fileID: 5755341640409805039}
   m_Layer: 5
-  m_Name: Resource
+  m_Name: ResourceLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -135,7 +135,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &578316434572544747
+--- !u!114 &5755341640409805039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,7 +147,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be2b30f67424c448bacb2c2a7ccc1c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Name: Cash
-  Type: 0
+  Name: Resource
   Value: 0
-  Icon: {fileID: 0}
+  SpriteName: Sprite

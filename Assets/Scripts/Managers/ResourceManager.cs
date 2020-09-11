@@ -14,48 +14,38 @@ namespace Assets.Scripts.Managers
 
     public class ResourceManager : Singleton<ResourceManager>
     {
-        public GameObject CashLabel;
 
-        /// <summary>
-        /// The private var to hold the value
-        /// </summary>
-        private int cash;
-        /// <summary>
-        /// The public var to watch for changes
-        /// </summary>
-        public int Cash { get { return cash; } set { if (cash != value) { cash = value; OnPropertyChanged(ResourceType.Cash); } } }
 
-        /// <summary>
-        /// Declares the parameter types for methods that PropertyChanged can call
-        /// </summary>
-        protected delegate void ResourceChangedEventHandler(object sender, ResourceType type);
-        /// <summary>
-        /// List of methods that get called upon value change
-        /// </summary>
-        protected virtual event ResourceChangedEventHandler PropertyChanged;
+        public GameObject ResourceLabelPrefab, ResourceIconPrefab;
+        public Dictionary<string, Resource> Resources = new Dictionary<string, Resource>();
 
-        /// <summary>
-        /// Gets called when the value changes
-        /// </summary>
-        protected void OnPropertyChanged(ResourceType type)
-        {
-            PropertyChanged?.Invoke(this, type);
-        }
-
-        /// <summary>
-        /// The observing method
-        /// </summary>
-        private void UpdateTextLabel(object sender, ResourceType type)
-        {
-            CashLabel.GetComponent<TextMeshProUGUI>().text = "Cash: " + cash;
-        }
 
         void Awake()
         {
-            PropertyChanged += UpdateTextLabel; // wire up the event or 'subscribe'
-            Cash = 100;
+            var container = GameObject.Find("ResourcesContainer");
+
+            var icon = Instantiate(ResourceIconPrefab, container.transform).GetComponent<Image>();
+            Resources.Add("Cash", Instantiate(ResourceLabelPrefab, container.transform).GetComponent<Resource>());
+            Resources["Cash"].Icon = icon;
+
+            icon = Instantiate(ResourceIconPrefab, container.transform).GetComponent<Image>();
+            Resources.Add("Lives", Instantiate(ResourceLabelPrefab, container.transform).GetComponent<Resource>());
+            Resources["Lives"].Icon = icon;
+
+            icon = Instantiate(ResourceIconPrefab, container.transform).GetComponent<Image>();
+            Resources.Add("Attack", Instantiate(ResourceLabelPrefab, container.transform).GetComponent<Resource>());
+            Resources["Attack"].Icon = icon;
+
+            icon = Instantiate(ResourceIconPrefab, container.transform).GetComponent<Image>();
+            Resources.Add("Defense", Instantiate(ResourceLabelPrefab, container.transform).GetComponent<Resource>());
+            Resources["Defense"].Icon = icon;
+
+
+            Resources["Cash"].NewResource("Cash", 100, "ace_of_diamonds");
+            Resources["Lives"].NewResource("Lives", 3, "ace_of_hearts");
+            Resources["Attack"].NewResource("Attack", 3, "ace_of_clubs");
+            Resources["Defense"].NewResource("Defense", 3, "ace_of_spades");
+
         }
-
-
     }
 }

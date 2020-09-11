@@ -78,7 +78,7 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
                 var lastCard = col.Cards.Last();
                 if (lastCard.Suit == card.Suit && lastCard.Face == (card.Face - 1))
                 {
-                    ResourceManager.Instance.Cash += 10;
+                    ResourceManager.Instance.Resources["Cash"].Value += 10;
                     card.MoveCardToDeck(col);
                     card.tag = "Bureau";
 
